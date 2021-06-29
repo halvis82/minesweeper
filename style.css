@@ -1,0 +1,41 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  font-family: "Lucida Sans","Lucida Sans Regular","Lucida Grande","Lucida Sans Unicode",Geneva,Verdana,sans-serif;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: center;
+  align-items: center;
+  background-color: gray;
+}
+
+canvas {
+  width: 80vmin;
+  aspect-ratio: 1 / 1;
+  border: solid black;
+  background-color: white;
+}
+
+.settings {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+label {
+  margin: 1vmin;
+}
+
+input[type=range] {
+  width: 20vmin;
+  outline: none;
+}
+
+#info {
+  display: flex;
+}
