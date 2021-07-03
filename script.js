@@ -1,4 +1,4 @@
-// Halvor, Created: 14.6.21-17.6.21, Minesweeper - NO INTERNET PROJECT (x & y flipped for some reason)
+// Halvor, Created: 14.6.21-03.07.2021, Minesweeper - NO INTERNET PROJECT (x & y flipped for some reason)
 
 /*
 Changes:
@@ -6,7 +6,6 @@ Changes:
 - low resolution when few tiles (multiply some variables by x when tiles lower than y)
 - change h1 font size
 - structure and clean up code, change variable/function names
-- prevent drawing bombs on flags upon completion (& for use in console)
 - different colors for different numbers (https://www.reddit.com/r/Piracy/comments/nzlsw8/why_so_many_buttons/?utm_source=share&utm_medium=ios_app&utm_name=iossmf)
 - save tiles & bombs to localStorage
 */
@@ -345,7 +344,40 @@ function showNeighbors(x, y) {
 }
 
 function showNumber(x, y) {
-  ctx.fillStyle = "#000000"
+  // ctx.fillStyle = "#000000"
+
+  // Set fillStyle according to the number
+  switch (game[x][y].neighborBombs) {
+    case 1:
+      ctx.fillStyle = "#0000FF"
+      break
+    case 2:
+      ctx.fillStyle = "#00FF00"
+      break
+    case 3:
+      ctx.fillStyle = "#FF0000"
+      break
+    case 4:
+      ctx.fillStyle = "#800080"
+      break
+    case 5:
+      ctx.fillStyle = "#800000"
+      break
+    case 6:
+      ctx.fillStyle = "#30D5C8"
+      break
+    case 7:
+      ctx.fillStyle = "#000000"
+      break
+    case 8:
+      ctx.fillStyle = "#808080"
+      break
+
+    default:
+      ctx.fillStyle = "#FFFFFF"
+      break
+  }
+
   ctx.font = `bolder 14px Arial`
   ctx.fillText(game[x][y].neighborBombs, borderSize / 2 + y * tileSize + y * borderSize + tileSize / 2, borderSize / 2 + x * tileSize + x * borderSize + tileSize / 2)
   ctx.fillStyle = tileColor
