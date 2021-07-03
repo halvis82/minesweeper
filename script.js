@@ -2,12 +2,13 @@
 
 /*
 Changes:
-- highlight tiles with to many flagged neighbors (only for first neighbors)
+- highlight tiles with too many flagged neighbors (only for first neighbors)
 - low resolution when few tiles (multiply some variables by x when tiles lower than y)
 - change h1 font size
 - structure and clean up code, change variable/function names
 - prevent drawing bombs on flags upon completion (& for use in console)
 - different colors for different numbers (https://www.reddit.com/r/Piracy/comments/nzlsw8/why_so_many_buttons/?utm_source=share&utm_medium=ios_app&utm_name=iossmf)
+- save tiles & bombs to localStorage
 */
 
 // Classes
@@ -154,11 +155,12 @@ settingsList.forEach(el => el.addEventListener("change", () => {
 
 // Functions
 function setupGame(exceptionPoint = []) {
-  // Reset timer
+  // Reset timer & flags
   clearInterval(timer.id)
   timer.running = false
   timer.time = 0
   document.getElementById("timer").innerText = " 0"
+  document.getElementById("flagAmount").innerText = " 0"
 
   // Update variables
   game = []
@@ -358,10 +360,15 @@ function drawAllBombs(password) {
 
   for (let x = 0; x < tiles; x++) {
     for (let y = 0; y < tiles; y++) {
+      if (game[x][y].flagged) {
+        game[x][y].toggleFlag(x, y)
+      }
+
       if (game[x][y].hasBomb) {
         // ctx.beginPath()
         // ctx.fillRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
         // ctx.closePath()
+
         ctx.drawImage(bombImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize)
       }
     }
