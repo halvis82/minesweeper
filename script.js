@@ -1,137 +1,116 @@
-// Halvor, Created: 14.6.21-03.07.2021, Minesweeper - NO INTERNET PROJECT (x & y flipped for some reason)
+// Halvor, Created: 14.6.21-04.07.2021, Minesweeper - NO INTERNET PROJECT (x & y flipped for some reason)
 
 /*
 Changes:
 - highlight tiles with too many flagged neighbors (only for first neighbors)
 - low resolution when few tiles ((FIX -> add universal multiplier (1x default) that is x if tiles < y))
-- change h1 font size
+- change element sizes (not canvas)
 - save tiles & bombs to localStorage
-- store coordinates in Tile objects
-- set fillstyle before every ctx drawing
+- sometimes highlight isn't removed when opening more tiles -> problem might be in open() method, so run determineHighlight there too ((Problem is that tile is updated after open() is run further down))
 
 Finishing touches:
 - change password
-- structure and clean up code, change variable/function names
+- change functions to Tile methods
 */
 
 // Classes
 class Tile {
-  constructor() {
+  constructor(x, y) {
     this.flagged = false
     this.tooManyFlags = false
     this.opened = false
     this.checked = false
     this.hasBomb = false
     this.neighborBombs = 0
+    this.x = x
+    this.y = y
   }
   
-  toggleFlag(x, y) {
+  toggleFlag() {
     if (unopenedTiles === Math.pow(tiles, 2)) { //Game not started
       return
     }
 
     this.flagged = !this.flagged
 
+    // Draw background first
+      ctx.fillStyle = "#0000FF"
+      ctx.fillRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
+
     if (this.flagged) {
-      // Draw background in case of drawAllBombs()
-      if (document.getElementById("info").innerHTML.length > 0) {
-        ctx.beginPath()
-        ctx.fillRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
-        ctx.closePath()
-      }
-
-      ctx.drawImage(flagImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize)
+      // Draw flag
+      ctx.drawImage(flagImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize)
       flags++
-
-      // Highlight numbers if too many flags
-      const neighborCoords = [-1, 0, 1]
-      for (let x2 of neighborCoords) {
-        for (let y2 of neighborCoords) {
-          if (x + x2 < 0 || y + y2 < 0 || x + x2 >= tiles || y + y2 >= tiles) {
-            continue
-          }
-          if (x2 === 0 && y2 === 0) {
-            continue
-          }
-
-          if (this.flaggedNeighbors(x + x2, y + y2) > game[x + x2][y + y2].neighborBombs && !game[x + x2][y + y2].tooManyFlags) {
-            ctx.globalAlpha = 0.5
-            ctx.fillStyle = "#FF0000"
-            
-            ctx.beginPath()
-            ctx.fillRect(borderSize / 2 + (y + y2) * tileSize + (y + y2) * borderSize, borderSize / 2 + (x + x2) * tileSize + (x + x2) * borderSize, tileSize, tileSize)
-            ctx.closePath()
-
-            ctx.globalAlpha = 1
-            ctx.fillStyle = "#0000FF"
-
-            game[x + x2][y + y2].tooManyFlags = true
-          }
-        }
-      }
-
-    } else {
-      ctx.beginPath()
-      ctx.fillRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
-      ctx.closePath()
-      flags--
-
-      // Unhighlight neighbor numbers if had too many flags
-      const neighborCoords = [-1, 0, 1]
-      for (let x2 of neighborCoords) {
-        for (let y2 of neighborCoords) {
-          if (x + x2 < 0 || y + y2 < 0 || x + x2 >= tiles || y + y2 >= tiles) {
-            continue
-          }
-          if (x2 === 0 && y2 === 0) {
-            continue
-          }
-
-          if (this.flaggedNeighbors(x + x2, y + y2) <= game[x + x2][y + y2].neighborBombs && game[x + x2][y + y2].tooManyFlags) {
-            ctx.beginPath()
-            ctx.clearRect(borderSize / 2 + (y + y2) * tileSize + (y + y2) * borderSize, borderSize / 2 + (x + x2) * tileSize + (x + x2) * borderSize, tileSize, tileSize)
-            ctx.closePath()
-            showNumber(x + x2, y + y2)
-
-            game[x + x2][y + y2].tooManyFlags = false
-          }
-        }
-      }
     }
+    else {
+      flags--
+    }
+    
+    this.determineHighlight()
 
+    // Update flag label
     document.getElementById("flagAmount").innerText = ` ${flags}`
     document.getElementById("flagAmount").style.color = (flags > bombs) ? "red" : "black"
   }
 
-  flaggedNeighbors(x, y) {
-    if (!game[x][y].opened || game[x][y].neighborBombs === 0) {
-      return 0
-    }
-
+  determineHighlight() { //ALSO use this on th one that is opened
     const neighborCoords = [-1, 0, 1]
-    let flaggedNeighborAmount = 0
+
     for (let x2 of neighborCoords) {
       for (let y2 of neighborCoords) {
-        if (x + x2 < 0 || y + y2 < 0 || x + x2 >= tiles || y + y2 >= tiles) {
-          continue
-        }
-        if (x2 === 0 && y2 === 0) {
+        const xHere = this.x + x2
+        const yHere = this.y + y2
+
+        // Skip if illegal coordinates, unopened tile, or no bomb neighbors
+        // const x0y0 = (x2 === 0 && y2 === 0)
+        if (xHere < 0 || yHere < 0 || xHere >= tiles || yHere >= tiles || !game[xHere][yHere].opened || game[xHere][yHere].neighborBombs === 0 /* || x0y0*/) {
           continue
         }
 
-        if (game[x + x2][y + y2].flagged) {
-          flaggedNeighborAmount++
+        // Find flagged neighbor amount
+        let flaggedNeighborAmount = 0
+        for (let x3 of neighborCoords) {
+          for (let y3 of neighborCoords) {
+            const x0y0 = x3 === 0 && y3 === 0
+            if (xHere + x3 < 0 || yHere + y3 < 0 || xHere + x3 >= tiles || yHere + y3 >= tiles || x0y0) {
+              continue
+            }
+    
+            if (game[xHere + x3][yHere + y3].flagged) {
+              flaggedNeighborAmount++
+            }
+          }
         }
+
+
+        // Add highlight
+        if (flaggedNeighborAmount > game[xHere][yHere].neighborBombs && !game[xHere][yHere].tooManyFlags) {
+          ctx.globalAlpha = 0.5
+          ctx.fillStyle = "#FF0000"
+          
+          ctx.fillRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
+
+          ctx.globalAlpha = 1
+
+          game[xHere][yHere].tooManyFlags = true
+        }
+        // Remove highlight
+         else if (flaggedNeighborAmount <= game[xHere][yHere].neighborBombs && game[xHere][yHere].tooManyFlags) {
+            ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
+            showNumber(xHere, yHere)
+
+            game[xHere][yHere].tooManyFlags = false
+         }
       }
     }
-
-    return flaggedNeighborAmount
   }
 
   open() {
     if (!this.hasBomb) {
       this.opened = true
+      this.flagged = false
       unopenedTiles--
+      this.determineHighlight()
     }
   }
 }
@@ -171,7 +150,7 @@ c.width = canvasSize
 c.height = canvasSize
 const ctx = c.getContext("2d")
 ctx.strokeStyle = "#FFFFFF"
-ctx.fillStyle = "#000000"
+// ctx.fillStyle = "#000000"
 ctx.font = `bolder ${tiles * 2}px Arial`
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
@@ -260,7 +239,6 @@ function setupGame(exceptionPoint = []) {
   canvasSize = tiles * (tileSize + borderSize)
   c.width = canvasSize
   c.height = canvasSize
-  ctx.fillStyle = "#000000"
   ctx.font = `bolder ${tiles * 2}px Arial`  
   ctx.textBaseline = "middle"
   ctx.textAlign = "center"
@@ -268,20 +246,17 @@ function setupGame(exceptionPoint = []) {
     document.getElementById("info").children[2].remove()
   }
 
-  // Draw game backgrond (blck borer)
-  ctx.beginPath()
+  // Draw game backgrond (black borer)
+  ctx.fillStyle = "#000000"
   ctx.fillRect(0, 0, canvasSize, canvasSize)
-  ctx.closePath()
-  ctx.fillStyle = tileColor
 
   // Draw game tiles
   let x = borderSize / 2
   let y = borderSize / 2
+  ctx.fillStyle = tileColor
   for (let i = 0; i < tiles; i++) {
     for (let j = 0; j < tiles; j++) {
-      ctx.beginPath()
       ctx.fillRect(x, y, tileSize, tileSize)
-      ctx.closePath()
 
       x += tileSize + borderSize
     }
@@ -308,7 +283,7 @@ function setupGame(exceptionPoint = []) {
   for (let x = 0; x < tiles; x++) {
     game.push([])
     for (let y = 0; y < tiles; y++) {
-      game[x].push(new Tile())
+      game[x].push(new Tile(x, y))
     }
   }
 
@@ -367,7 +342,6 @@ function showTile(x, y) {
       if (tiles > 14) {
         ctx.strokeText("You won", canvasSize / 2, canvasSize / 2)
       }
-      ctx.fillStyle = tileColor
 
       c.removeEventListener("mousedown", mouseDown)
       setTimeout(() => {
@@ -377,7 +351,6 @@ function showTile(x, y) {
 
     return
   }
-  
 
   gameOver = true
   
@@ -389,7 +362,6 @@ function showTile(x, y) {
   if (tiles > 14) {
     ctx.strokeText("GAME OVER", canvasSize / 2, canvasSize / 2)
   }
-  ctx.fillStyle = tileColor
 
   c.removeEventListener("mousedown", mouseDown)
   setTimeout(() => {
@@ -469,7 +441,6 @@ function showNumber(x, y) {
 
   ctx.font = `bolder 14px Arial`
   ctx.fillText(game[x][y].neighborBombs, borderSize / 2 + y * tileSize + y * borderSize + tileSize / 2, borderSize / 2 + x * tileSize + x * borderSize + tileSize / 2)
-  ctx.fillStyle = tileColor
   ctx.font = `bolder ${tiles * 2}px Arial`
 }
 
@@ -486,10 +457,6 @@ function drawAllBombs(password) {
       }
 
       if (game[x][y].hasBomb) {
-        // ctx.beginPath()
-        // ctx.fillRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
-        // ctx.closePath()
-
         ctx.drawImage(bombImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize)
       }
     }
