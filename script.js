@@ -2,7 +2,6 @@
 
 /*
 Changes:
-- low resolution when few tiles ((FIX -> add universal multiplier (1x default) that is x if tiles < y))
 - save tiles & bombs to localStorage
 
 Finishing touches:
@@ -37,7 +36,7 @@ class Tile {
 
     if (this.flagged) {
       // Draw flag
-      ctx.drawImage(flagImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize)
+      ctx.drawImage(flagImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
       flags++
     }
     else {
@@ -123,10 +122,9 @@ class Tile {
         drawAllBombs("IDIDNOTCHEAT")
 
         ctx.fillStyle = "#00FF00"
+        ctx.font = `bolder ${tiles * 2 * canvasMultiplier}px Arial`
         ctx.fillText("You won", canvasSize / 2, canvasSize / 2)
-        if (tiles > 14) {
-          ctx.strokeText("You won", canvasSize / 2, canvasSize / 2)
-        }
+        ctx.strokeText("You won", canvasSize / 2, canvasSize / 2)
 
         c.removeEventListener("mousedown", mouseDown)
         setTimeout(() => {
@@ -139,12 +137,11 @@ class Tile {
       gameOver = true
       drawAllBombs("IDIDNOTCHEAT")
   
-      ctx.drawImage(bombImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize)
+      ctx.drawImage(bombImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
       ctx.fillStyle = "#FF0000"
+      ctx.font = `bolder ${tiles * 2 * canvasMultiplier}px Arial`
       ctx.fillText("GAME OVER", canvasSize / 2, canvasSize / 2)
-      if (tiles > 14) {
-        ctx.strokeText("GAME OVER", canvasSize / 2, canvasSize / 2)
-      }
+      ctx.strokeText("GAME OVER", canvasSize / 2, canvasSize / 2)
     
       c.removeEventListener("mousedown", mouseDown)
       setTimeout(() => {
@@ -181,16 +178,15 @@ const bombImg = new Image()
 bombImg.src = "./images/bomb.png"
 
 // Canvas setup
-const tileSize = 16
-const borderSize = 2
-let canvasSize = tiles * (tileSize + borderSize)
+let canvasMultiplier = 1 //something
+let tileSize = 16 * canvasMultiplier
+let borderSize = 2 * canvasMultiplier
+let canvasSize = tiles * (tileSize + borderSize) * canvasMultiplier
 const c = document.getElementsByTagName("canvas")[0]
 c.width = canvasSize
 c.height = canvasSize
 const ctx = c.getContext("2d")
 ctx.strokeStyle = "#FFFFFF"
-// ctx.fillStyle = "#000000"
-ctx.font = `bolder ${tiles * 2}px Arial`
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
 
@@ -271,14 +267,24 @@ function setupGame(exceptionPoint = []) {
   document.getElementById("flagAmount").innerText = " 0"
 
   // Update variables
+  if (tiles <= 8) {
+    canvasMultiplier = 5
+  } else if (tiles <= 14) {
+    canvasMultiplier = 3
+  } else if (tiles <= 20) {
+    canvasMultiplier = 2
+  } else {
+    canvasMultiplier = 1
+  }
   game = []
   gameOver = false
   unopenedTiles = Math.pow(tiles, 2)
   flags = 0
+  tileSize = 16 * canvasMultiplier
+  borderSize = 2 * canvasMultiplier
   canvasSize = tiles * (tileSize + borderSize)
   c.width = canvasSize
   c.height = canvasSize
-  ctx.font = `bolder ${tiles * 2}px Arial`  
   ctx.textBaseline = "middle"
   ctx.textAlign = "center"
   if (document.getElementById("info").children.length > 2) {
@@ -434,9 +440,8 @@ function showNumber(x, y, rundetermineHighlight = true) {
       break
   }
 
-  ctx.font = `bolder 14px Arial`
+  ctx.font = `bolder ${14 * canvasMultiplier}px Arial`
   ctx.fillText(game[x][y].neighborBombs, borderSize / 2 + y * tileSize + y * borderSize + tileSize / 2, borderSize / 2 + x * tileSize + x * borderSize + tileSize / 2)
-  ctx.font = `bolder ${tiles * 2}px Arial`
 
   if (rundetermineHighlight) {
     game[x][y].determineHighlight()
@@ -456,7 +461,7 @@ function drawAllBombs(password) {
       }
 
       if (game[x][y].hasBomb) {
-        ctx.drawImage(bombImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize)
+        ctx.drawImage(bombImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
       }
     }
   }
