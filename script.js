@@ -8,9 +8,9 @@
 /*
 Changes:
 - add neighbors coords like [[x1,y1],[x2,y2],...] to each Tile object MAYBE - do in constuctor
+- click settings labels to reset their values
 
 Finishing touches:
-- change password?
 - change element sizes (not canvas)
 */
 
@@ -123,7 +123,8 @@ class Tile {
       if (unopenedTiles === bombs) {
         gameOver = true
 
-        drawAllBombs("IDIDNOTCHEAT")
+        const timePassword = new Date()
+        drawAllBombs(Math.pow(+timePassword.getSeconds(), 3))
 
         ctx.fillStyle = "#00FF00"
         ctx.font = `bolder ${tiles * 2 * canvasMultiplier}px Arial`
@@ -139,7 +140,9 @@ class Tile {
     // If tile has bomb
     else {
       gameOver = true
-      drawAllBombs("IDIDNOTCHEAT")
+      
+      const timePassword = new Date()
+      drawAllBombs(Math.pow(+timePassword.getSeconds(), 3))
   
       ctx.drawImage(bombImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
       ctx.fillStyle = "#FF0000"
@@ -493,7 +496,8 @@ function drawAllBombs(password) {
     }
   }
 
-  if (document.getElementById("info").children.length === 2 && password !== "IDIDNOTCHEAT") {
+  const timePassword = new Date()
+  if (document.getElementById("info").children.length === 2 && password !== Math.pow(+timePassword.getSeconds(), 3)) {
     document.getElementById("info").innerHTML += `
     <div style="color: red; margin-left: 1em; font-weight: 700;">CHEATED</div>
     `
