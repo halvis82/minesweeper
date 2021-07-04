@@ -7,7 +7,7 @@
 
 /*
 Changes:
-- comment more code
+- game actually setting up when right clicking to flag as first click
 - maybe! flip x & y back to correct idk
 */
 
@@ -50,15 +50,16 @@ class Tile {
   }
   
   toggleFlag() {
-    if (unopenedTiles === Math.pow(tiles, 2)) { //Game not started
+    // Don't allow if game not started
+    if (unopenedTiles === Math.pow(tiles, 2)) {
       return
     }
 
     this.flagged = !this.flagged
 
-    // Draw background first
-      ctx.fillStyle = "#0000FF"
-      ctx.fillRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
+    // Draw tile background first
+    ctx.fillStyle = "#0000FF"
+    ctx.fillRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
 
     if (this.flagged) {
       // Draw flag
@@ -95,7 +96,7 @@ class Tile {
         }
       }
 
-      // Add highlight
+      // Add highlight (50% opacity red square)
       if (flaggedNeighborAmount > tileHere.neighborBombs && !tileHere.tooManyFlags) {
         ctx.globalAlpha = 0.5
         ctx.fillStyle = "#FF0000"
@@ -128,20 +129,24 @@ class Tile {
     if (!this.hasBomb) {
       this.open()
 
+      // Clear tile
       ctx.clearRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
 
       // Check if win
       if (unopenedTiles === bombs) {
         gameOver = true
 
+        // Show all bombs (not cheat)
         const timePassword = new Date()
         drawAllBombs(Math.pow(+timePassword.getSeconds(), 3))
 
+        // Draw 'you won' on screen
         ctx.fillStyle = "#00FF00"
         ctx.font = `bolder ${tiles * 2 * canvasMultiplier}px Arial`
         ctx.fillText("You won", canvasSize / 2, canvasSize / 2)
         ctx.strokeText("You won", canvasSize / 2, canvasSize / 2)
 
+        // Disable input for .5 seconds
         c.removeEventListener("mousedown", mouseDown)
         setTimeout(() => {
           c.addEventListener("mousedown", mouseDown)
@@ -152,15 +157,17 @@ class Tile {
     else {
       gameOver = true
       
+      // Show all bombs (not cheat)
       const timePassword = new Date()
       drawAllBombs(Math.pow(+timePassword.getSeconds(), 3))
   
-      ctx.drawImage(bombImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
+      // Draw 'game over' on screen
       ctx.fillStyle = "#FF0000"
       ctx.font = `bolder ${tiles * 2 * canvasMultiplier}px Arial`
       ctx.fillText("GAME OVER", canvasSize / 2, canvasSize / 2)
       ctx.strokeText("GAME OVER", canvasSize / 2, canvasSize / 2)
     
+      // Disable input for .5 seconds
       c.removeEventListener("mousedown", mouseDown)
       setTimeout(() => {
         c.addEventListener("mousedown", mouseDown)
@@ -201,6 +208,7 @@ class Tile {
         break
     }
   
+    // Write number on empty tile representing amount of neighbor bombs
     ctx.font = `bolder ${14 * canvasMultiplier}px Arial`
     ctx.fillText(this.neighborBombs, borderSize / 2 + this.y * tileSize + this.y * borderSize + tileSize / 2, borderSize / 2 + this.x * tileSize + this.x * borderSize + tileSize / 2)
   
@@ -212,6 +220,7 @@ class Tile {
   showNeighbors() {
     this.checked = true
 
+    // Stop and show number here if has bomb neighbors
     if (this.neighborBombs > 0) {
       this.showNumber()
       return
@@ -222,16 +231,19 @@ class Tile {
       const yNew = coords[1]
       const tileNew = game[xNew][yNew]
 
+      // Skip if checked before or has bomb
       if (tileNew.checked || tileNew.hasBomb) {
         continue
       }
 
       game[xNew][yNew].checked = true
 
+      // Run this again if still no bomb neighbors
       if (tileNew.neighborBombs === 0) {
         tileNew.showTile()
         tileNew.showNeighbors()
       }
+      // Stop and show number if has bomb neighbors
       else {
         tileNew.showTile()
         tileNew.showNumber()
@@ -240,7 +252,7 @@ class Tile {
   }
 }
 
-// Elements (settings)
+// Settings elements (tiles & bombs)
 const tileSettings = {
   label: document.getElementById("tilesAmountText"),
   amount: document.getElementById("tilesAmountRange")
@@ -261,10 +273,6 @@ let actuallyStarted = false
 let unopenedTiles = Math.pow(tiles, 2)
 let flags = 0
 let timer = {id: "", time: 0, running: false}
-const flagImg = new Image()
-flagImg.src = "./images/flag.png"
-const bombImg = new Image()
-bombImg.src = "./images/bomb.png"
 
 // Set tiles & bombs
 if (localStorage.getItem("tiles") !== null) {
@@ -272,7 +280,7 @@ if (localStorage.getItem("tiles") !== null) {
 } else {
   tiles = 20
 }
-if (localStorage.getItem("bombs") !== null || localStorage.getItem("bombs") > Math.pow(tiles, 2) - 5) {
+if (localStorage.getItem("bombs") !== null && localStorage.getItem("bombs") <= Math.pow(tiles, 2) - 5) {
   bombs = +localStorage.getItem("bombs")
 } else {
   bombs = 50
@@ -281,9 +289,10 @@ tileSettings.amount.value = +tiles
 tileSettings.label.innerText = `Tiles [${tileSettings.amount.value}]:`
 bombSettings.amount.value = +bombs
 bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
+bombSettings.amount.max = Math.pow(tiles, 2) - 5
 
 // Canvas setup
-let canvasMultiplier = 1 //For low resolution with few tiles
+let canvasMultiplier = 1 //For low resolution when few tiles
 let tileSize = 16 * canvasMultiplier
 let borderSize = 2 * canvasMultiplier
 let canvasSize = tiles * (tileSize + borderSize) * canvasMultiplier
@@ -294,6 +303,10 @@ const ctx = c.getContext("2d")
 ctx.strokeStyle = "#FFFFFF"
 ctx.textBaseline = "middle"
 ctx.textAlign = "center"
+const flagImg = new Image()
+flagImg.src = "./images/flag.png"
+const bombImg = new Image()
+bombImg.src = "./images/bomb.png"
 
 // Setup game (set variables and create random game)
 setupGame()
@@ -301,11 +314,13 @@ setupGame()
 // Event listeners
 c.addEventListener("mousedown", mouseDown)
 function mouseDown(e) {
-  if (gameOver) { //Restart
+  // Restart
+  if (gameOver) {
     setupGame()
     return
   }
 
+  // Find game coordinates according to canvas element size
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
   const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
   const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
@@ -321,7 +336,8 @@ function mouseDown(e) {
     actuallyStarted = true
   }
 
-  if (e.button === 0) { //Left click
+  // Left click (open tile)
+  if (e.button === 0) {
     if (!game[x][y].flagged && !game[x][y].opened) {
       game[x][y].showTile()
 
@@ -330,7 +346,8 @@ function mouseDown(e) {
       }
     }
   }
-  else if (e.button === 2) { //Right click
+  // Right click (toggle flag)
+  else if (e.button === 2) {
     if (!game[x][y].opened) {
       game[x][y].toggleFlag(x, y)
     }
@@ -340,17 +357,21 @@ function mouseDown(e) {
 // Update labels & max bombs relative to slider
 tileSettings.amount.addEventListener("input", tileInput)
 function tileInput() {
-  tileSettings.label.innerText = `Tiles [${tileSettings.amount.value}]:`
-  bombSettings.amount.max = Math.pow(+tileSettings.amount.value, 2) - 5
 
+  // Update bombs & label
   if (!bombsUpdatedManually) {
     bombSettings.amount.value = Math.floor(+Math.pow(tileSettings.amount.value, 2) / 7)
-    bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
   }
+  
+  // Update labels & max bombs
+  tileSettings.label.innerText = `Tiles [${tileSettings.amount.value}]:`
+  bombSettings.amount.max = Math.pow(+tileSettings.amount.value, 2) - 5
+  bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
 }
 bombSettings.amount.addEventListener("input", () => {
   bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
 
+  // Prevent future auto bomb amount updates
   bombsUpdatedManually = true
 })
 
@@ -376,6 +397,7 @@ settingsList.forEach(el => el.label.addEventListener("click", () => {
   settingsAmountChange()
 }))
 
+
 // Functions
 function setupGame(exceptionPoint = []) {
   // Reset timer & flags
@@ -385,7 +407,7 @@ function setupGame(exceptionPoint = []) {
   document.getElementById("timer").innerText = " 0"
   document.getElementById("flagAmount").innerText = " 0"
 
-  // Update variables
+  // Update variables (game & canvas)
   if (tiles <= 8) {
     canvasMultiplier = 5
   } else if (tiles <= 14) {
@@ -410,11 +432,11 @@ function setupGame(exceptionPoint = []) {
     document.getElementById("info").children[2].remove()
   }
 
-  // Draw game background (black border)
+  // Draw game background (black borders)
   ctx.fillStyle = "#000000"
   ctx.fillRect(0, 0, canvasSize, canvasSize)
 
-  // Draw game tiles
+  // Draw all game tiles
   let x = borderSize / 2
   let y = borderSize / 2
   ctx.fillStyle = tileColor
@@ -428,7 +450,8 @@ function setupGame(exceptionPoint = []) {
     y += tileSize + borderSize
   }
 
-  if (!exceptionPoint.length) { //Only draw
+  // Only draw game & don't set up game structure
+  if (!exceptionPoint.length) {
     actuallyStarted = false
     return
   }
@@ -459,7 +482,8 @@ function setupGame(exceptionPoint = []) {
       coords.splice(point, 1)
     }
   }
-  for (let i = 0; i < bombs; i++) { // Set bombs at random & remove coordinate to avoid repetition
+  // Set bombs at random & remove coordinate to avoid repetition
+  for (let i = 0; i < bombs; i++) {
     const randomCoordinate = Math.floor(Math.random() * coords.length)
     game[coords[randomCoordinate][0]][coords[randomCoordinate][1]].hasBomb = true
     coords.splice(randomCoordinate, 1)
@@ -474,11 +498,13 @@ function setupGame(exceptionPoint = []) {
 }
 
 function drawAllBombs(password) {
+  // Cancel if game not started
   if (!game.length) {
     console.error("NO")
     return
   }
 
+  // Remove all flags & draw all bombs
   for (let x = 0; x < tiles; x++) {
     for (let y = 0; y < tiles; y++) {
       if (game[x][y].flagged) {
@@ -491,6 +517,7 @@ function drawAllBombs(password) {
     }
   }
 
+  // Write 'cheated' if incorrect password
   const timePassword = new Date()
   if (document.getElementById("info").children.length === 2 && password !== Math.pow(+timePassword.getSeconds(), 3)) {
     document.getElementById("info").innerHTML += `
