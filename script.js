@@ -2,15 +2,13 @@
 
 /*
 Changes:
-- highlight tiles with too many flagged neighbors (only for first neighbors)
 - low resolution when few tiles ((FIX -> add universal multiplier (1x default) that is x if tiles < y))
-- change element sizes (not canvas)
 - save tiles & bombs to localStorage
-- sometimes highlight isn't removed when opening more tiles -> problem might be in open() method, so run determineHighlight there too ((Problem is that tile is updated after open() is run further down))
 
 Finishing touches:
-- change password
 - change functions to Tile methods
+- change password
+- change element sizes (not canvas)
 */
 
 // Classes
@@ -53,7 +51,7 @@ class Tile {
     document.getElementById("flagAmount").style.color = (flags > bombs) ? "red" : "black"
   }
 
-  determineHighlight() { //ALSO use this on th one that is opened
+  determineHighlight() {
     const neighborCoords = [-1, 0, 1]
 
     for (let x2 of neighborCoords) {
@@ -62,8 +60,7 @@ class Tile {
         const yHere = this.y + y2
 
         // Skip if illegal coordinates, unopened tile, or no bomb neighbors
-        // const x0y0 = (x2 === 0 && y2 === 0)
-        if (xHere < 0 || yHere < 0 || xHere >= tiles || yHere >= tiles || !game[xHere][yHere].opened || game[xHere][yHere].neighborBombs === 0 /* || x0y0*/) {
+        if (xHere < 0 || yHere < 0 || xHere >= tiles || yHere >= tiles || !game[xHere][yHere].opened || game[xHere][yHere].neighborBombs === 0) {
           continue
         }
 
@@ -97,7 +94,7 @@ class Tile {
         // Remove highlight
          else if (flaggedNeighborAmount <= game[xHere][yHere].neighborBombs && game[xHere][yHere].tooManyFlags) {
             ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
-            showNumber(xHere, yHere)
+            showNumber(xHere, yHere, false)
 
             game[xHere][yHere].tooManyFlags = false
          }
@@ -110,7 +107,49 @@ class Tile {
       this.opened = true
       this.flagged = false
       unopenedTiles--
-      this.determineHighlight()
+    }
+  }
+
+  showTile() {
+    if (!this.hasBomb) {
+      this.open()
+
+      ctx.clearRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
+
+      // Check if win
+      if (unopenedTiles === bombs) {
+        gameOver = true
+
+        drawAllBombs("IDIDNOTCHEAT")
+
+        ctx.fillStyle = "#00FF00"
+        ctx.fillText("You won", canvasSize / 2, canvasSize / 2)
+        if (tiles > 14) {
+          ctx.strokeText("You won", canvasSize / 2, canvasSize / 2)
+        }
+
+        c.removeEventListener("mousedown", mouseDown)
+        setTimeout(() => {
+          c.addEventListener("mousedown", mouseDown)
+        }, 500)
+      }
+    }
+    // If tile has bomb
+    else {
+      gameOver = true
+      drawAllBombs("IDIDNOTCHEAT")
+  
+      ctx.drawImage(bombImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize)
+      ctx.fillStyle = "#FF0000"
+      ctx.fillText("GAME OVER", canvasSize / 2, canvasSize / 2)
+      if (tiles > 14) {
+        ctx.strokeText("GAME OVER", canvasSize / 2, canvasSize / 2)
+      }
+    
+      c.removeEventListener("mousedown", mouseDown)
+      setTimeout(() => {
+        c.addEventListener("mousedown", mouseDown)
+      }, 500)
     }
   }
 }
@@ -184,7 +223,7 @@ function mouseDown(e) {
   // console.log(x, y, game[x][y])   //Sometimes throws errors cant read property idk
   if (e.button === 0) { //Left click
     if (!game[x][y].flagged && !game[x][y].opened) {
-      showTile(x, y)
+      game[x][y].showTile()
 
       if (!gameOver) {
         showNeighbors(x, y)
@@ -325,50 +364,6 @@ function setupGame(exceptionPoint = []) {
   }
 }
 
-function showTile(x, y) {
-  if (!game[x][y].hasBomb) {
-    game[x][y].open()
-
-    ctx.clearRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
-
-    // Check if win
-    if (unopenedTiles === bombs) {
-      gameOver = true
-          
-      drawAllBombs("IDIDNOTCHEAT")
-    
-      ctx.fillStyle = "#00FF00"
-      ctx.fillText("You won", canvasSize / 2, canvasSize / 2)
-      if (tiles > 14) {
-        ctx.strokeText("You won", canvasSize / 2, canvasSize / 2)
-      }
-
-      c.removeEventListener("mousedown", mouseDown)
-      setTimeout(() => {
-        c.addEventListener("mousedown", mouseDown)
-      }, 500)
-    }
-
-    return
-  }
-
-  gameOver = true
-  
-  drawAllBombs("IDIDNOTCHEAT")
-
-  ctx.drawImage(bombImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize)
-  ctx.fillStyle = "#FF0000"
-  ctx.fillText("GAME OVER", canvasSize / 2, canvasSize / 2)
-  if (tiles > 14) {
-    ctx.strokeText("GAME OVER", canvasSize / 2, canvasSize / 2)
-  }
-
-  c.removeEventListener("mousedown", mouseDown)
-  setTimeout(() => {
-    c.addEventListener("mousedown", mouseDown)
-  }, 500)
-}
-
 function showNeighbors(x, y) {
   const neighborCoords = [-1, 0, 1]
   game[x][y].checked = true
@@ -394,11 +389,11 @@ function showNeighbors(x, y) {
         game[xNew][yNew].checked = true
 
         if (!game[xNew][yNew].neighborBombs) { // Doesn't have bomb neighbors
-          showTile(xNew, yNew)
+          game[xNew][yNew].showTile()
           showNeighbors(xNew, yNew)
         }
         else { // Has bomb neighbors
-          showTile(xNew, yNew)
+          game[xNew][yNew].showTile()
           showNumber(xNew, yNew)
         }
       }
@@ -406,7 +401,7 @@ function showNeighbors(x, y) {
   }
 }
 
-function showNumber(x, y) {
+function showNumber(x, y, rundetermineHighlight = true) {
   // Set fillStyle according to the number
   switch (game[x][y].neighborBombs) {
     case 1:
@@ -442,6 +437,10 @@ function showNumber(x, y) {
   ctx.font = `bolder 14px Arial`
   ctx.fillText(game[x][y].neighborBombs, borderSize / 2 + y * tileSize + y * borderSize + tileSize / 2, borderSize / 2 + x * tileSize + x * borderSize + tileSize / 2)
   ctx.font = `bolder ${tiles * 2}px Arial`
+
+  if (rundetermineHighlight) {
+    game[x][y].determineHighlight()
+  }
 }
 
 function drawAllBombs(password) {
