@@ -1,12 +1,16 @@
-// Halvor, Created: 14.6.21-04.07.2021, Minesweeper - NO INTERNET PROJECT (x & y flipped for some reason)
+/* 
+ * Minesweeper
+ * By: Halvor
+ * Created: 14.6.21-04.07.2021
+ * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code
+*/
 
 /*
 Changes:
-- add neighbors coords like [[x1,y1],[x2,y2],...] to each Tile object MAYBE
+- add neighbors coords like [[x1,y1],[x2,y2],...] to each Tile object MAYBE - do in constuctor
 
 Finishing touches:
-- change functions to Tile methods
-- change password
+- change password?
 - change element sizes (not canvas)
 */
 
@@ -93,7 +97,7 @@ class Tile {
         // Remove highlight
          else if (flaggedNeighborAmount <= game[xHere][yHere].neighborBombs && game[xHere][yHere].tooManyFlags) {
             ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
-            showNumber(xHere, yHere, false)
+            game[xHere][yHere].showNumber(false)
 
             game[xHere][yHere].tooManyFlags = false
          }
@@ -147,6 +151,85 @@ class Tile {
       setTimeout(() => {
         c.addEventListener("mousedown", mouseDown)
       }, 500)
+    }
+  }
+
+  showNumber(run_determineHighlight = true) {
+    // Set fillStyle according to the number
+    switch (this.neighborBombs) {
+      case 1:
+        ctx.fillStyle = "#0000FF"
+        break
+      case 2:
+        ctx.fillStyle = "#00FF00"
+        break
+      case 3:
+        ctx.fillStyle = "#FF0000"
+        break
+      case 4:
+        ctx.fillStyle = "#800080"
+        break
+      case 5:
+        ctx.fillStyle = "#800000"
+        break
+      case 6:
+        ctx.fillStyle = "#30D5C8"
+        break
+      case 7:
+        ctx.fillStyle = "#000000"
+        break
+      case 8:
+        ctx.fillStyle = "#808080"
+        break
+
+      default:
+        ctx.fillStyle = "#FFFFFF"
+        break
+    }
+  
+    ctx.font = `bolder ${14 * canvasMultiplier}px Arial`
+    ctx.fillText(this.neighborBombs, borderSize / 2 + this.y * tileSize + this.y * borderSize + tileSize / 2, borderSize / 2 + this.x * tileSize + this.x * borderSize + tileSize / 2)
+  
+    if (run_determineHighlight) {
+      this.determineHighlight()
+    }
+  }
+
+  showNeighbors() {
+    const neighborCoords = [-1, 0, 1]
+    this.checked = true
+
+    if (this.neighborBombs > 0) {
+      this.showNumber()
+      return
+    }
+
+    for (let x2 of neighborCoords) {
+      for (let y2 of neighborCoords) {
+        const xNew = this.x + x2
+        const yNew = this.y + y2
+  
+        if (xNew >= 0 && yNew >= 0 && xNew < tiles && yNew < tiles) {
+          if (x2 === 0 && y2 === 0) {
+            continue
+          }
+    
+          if (game[xNew][yNew].checked || game[xNew][yNew].hasBomb) {
+            continue
+          }
+          game[xNew][yNew].checked = true
+  
+          if (!game[xNew][yNew].neighborBombs) { // Doesn't have bomb neighbors
+            game[xNew][yNew].showTile()
+            // showNeighbors(xNew, yNew)
+            game[xNew][yNew].showNeighbors()
+          }
+          else { // Has bomb neighbors
+            game[xNew][yNew].showTile()
+            game[xNew][yNew].showNumber()
+          }
+        }
+      }
     }
   }
 }
@@ -238,7 +321,8 @@ function mouseDown(e) {
       game[x][y].showTile()
 
       if (!gameOver) {
-        showNeighbors(x, y)
+        // showNeighbors(x, y)
+        game[x][y].showNeighbors()
       }
     }
   }
@@ -388,84 +472,6 @@ function setupGame(exceptionPoint = []) {
         }
       }
     }
-  }
-}
-
-function showNeighbors(x, y) {
-  const neighborCoords = [-1, 0, 1]
-  game[x][y].checked = true
-
-  if (game[x][y].neighborBombs > 0) {
-    showNumber(x, y)
-    return
-  }
-
-  for (let x2 of neighborCoords) {
-    for (let y2 of neighborCoords) {
-      const xNew = x + x2
-      const yNew = y + y2
-
-      if (xNew >= 0 && yNew >= 0 && xNew < tiles && yNew < tiles) {
-        if (x2 === 0 && y2 === 0) {
-          continue
-        }
-  
-        if (game[xNew][yNew].checked || game[xNew][yNew].hasBomb) {
-          continue
-        }
-        game[xNew][yNew].checked = true
-
-        if (!game[xNew][yNew].neighborBombs) { // Doesn't have bomb neighbors
-          game[xNew][yNew].showTile()
-          showNeighbors(xNew, yNew)
-        }
-        else { // Has bomb neighbors
-          game[xNew][yNew].showTile()
-          showNumber(xNew, yNew)
-        }
-      }
-    }
-  }
-}
-
-function showNumber(x, y, rundetermineHighlight = true) {
-  // Set fillStyle according to the number
-  switch (game[x][y].neighborBombs) {
-    case 1:
-      ctx.fillStyle = "#0000FF"
-      break
-    case 2:
-      ctx.fillStyle = "#00FF00"
-      break
-    case 3:
-      ctx.fillStyle = "#FF0000"
-      break
-    case 4:
-      ctx.fillStyle = "#800080"
-      break
-    case 5:
-      ctx.fillStyle = "#800000"
-      break
-    case 6:
-      ctx.fillStyle = "#30D5C8"
-      break
-    case 7:
-      ctx.fillStyle = "#000000"
-      break
-    case 8:
-      ctx.fillStyle = "#808080"
-      break
-
-    default:
-      ctx.fillStyle = "#FFFFFF"
-      break
-  }
-
-  ctx.font = `bolder ${14 * canvasMultiplier}px Arial`
-  ctx.fillText(game[x][y].neighborBombs, borderSize / 2 + y * tileSize + y * borderSize + tileSize / 2, borderSize / 2 + x * tileSize + x * borderSize + tileSize / 2)
-
-  if (rundetermineHighlight) {
-    game[x][y].determineHighlight()
   }
 }
 
