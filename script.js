@@ -3,17 +3,22 @@
 /*
 Changes:
 - highlight tiles with too many flagged neighbors (only for first neighbors)
-- low resolution when few tiles (multiply some variables by x when tiles lower than y)
+- low resolution when few tiles ((FIX -> add universal multiplier (1x default) that is x if tiles < y))
 - change h1 font size
-- structure and clean up code, change variable/function names
-- different colors for different numbers (https://www.reddit.com/r/Piracy/comments/nzlsw8/why_so_many_buttons/?utm_source=share&utm_medium=ios_app&utm_name=iossmf)
 - save tiles & bombs to localStorage
+- store coordinates in Tile objects
+- set fillstyle before every ctx drawing
+
+Finishing touches:
+- change password
+- structure and clean up code, change variable/function names
 */
 
 // Classes
 class Tile {
   constructor() {
     this.flagged = false
+    this.tooManyFlags = false
     this.opened = false
     this.checked = false
     this.hasBomb = false
@@ -21,20 +26,106 @@ class Tile {
   }
   
   toggleFlag(x, y) {
+    if (unopenedTiles === Math.pow(tiles, 2)) { //Game not started
+      return
+    }
+
     this.flagged = !this.flagged
 
     if (this.flagged) {
+      // Draw background in case of drawAllBombs()
+      if (document.getElementById("info").innerHTML.length > 0) {
+        ctx.beginPath()
+        ctx.fillRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
+        ctx.closePath()
+      }
+
       ctx.drawImage(flagImg, borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize)
       flags++
+
+      // Highlight numbers if too many flags
+      const neighborCoords = [-1, 0, 1]
+      for (let x2 of neighborCoords) {
+        for (let y2 of neighborCoords) {
+          if (x + x2 < 0 || y + y2 < 0 || x + x2 >= tiles || y + y2 >= tiles) {
+            continue
+          }
+          if (x2 === 0 && y2 === 0) {
+            continue
+          }
+
+          if (this.flaggedNeighbors(x + x2, y + y2) > game[x + x2][y + y2].neighborBombs && !game[x + x2][y + y2].tooManyFlags) {
+            ctx.globalAlpha = 0.5
+            ctx.fillStyle = "#FF0000"
+            
+            ctx.beginPath()
+            ctx.fillRect(borderSize / 2 + (y + y2) * tileSize + (y + y2) * borderSize, borderSize / 2 + (x + x2) * tileSize + (x + x2) * borderSize, tileSize, tileSize)
+            ctx.closePath()
+
+            ctx.globalAlpha = 1
+            ctx.fillStyle = "#0000FF"
+
+            game[x + x2][y + y2].tooManyFlags = true
+          }
+        }
+      }
+
     } else {
       ctx.beginPath()
       ctx.fillRect(borderSize / 2 + y * tileSize + y * borderSize, borderSize / 2 + x * tileSize + x * borderSize, tileSize, tileSize)
       ctx.closePath()
       flags--
+
+      // Unhighlight neighbor numbers if had too many flags
+      const neighborCoords = [-1, 0, 1]
+      for (let x2 of neighborCoords) {
+        for (let y2 of neighborCoords) {
+          if (x + x2 < 0 || y + y2 < 0 || x + x2 >= tiles || y + y2 >= tiles) {
+            continue
+          }
+          if (x2 === 0 && y2 === 0) {
+            continue
+          }
+
+          if (this.flaggedNeighbors(x + x2, y + y2) <= game[x + x2][y + y2].neighborBombs && game[x + x2][y + y2].tooManyFlags) {
+            ctx.beginPath()
+            ctx.clearRect(borderSize / 2 + (y + y2) * tileSize + (y + y2) * borderSize, borderSize / 2 + (x + x2) * tileSize + (x + x2) * borderSize, tileSize, tileSize)
+            ctx.closePath()
+            showNumber(x + x2, y + y2)
+
+            game[x + x2][y + y2].tooManyFlags = false
+          }
+        }
+      }
     }
 
     document.getElementById("flagAmount").innerText = ` ${flags}`
     document.getElementById("flagAmount").style.color = (flags > bombs) ? "red" : "black"
+  }
+
+  flaggedNeighbors(x, y) {
+    if (!game[x][y].opened || game[x][y].neighborBombs === 0) {
+      return 0
+    }
+
+    const neighborCoords = [-1, 0, 1]
+    let flaggedNeighborAmount = 0
+    for (let x2 of neighborCoords) {
+      for (let y2 of neighborCoords) {
+        if (x + x2 < 0 || y + y2 < 0 || x + x2 >= tiles || y + y2 >= tiles) {
+          continue
+        }
+        if (x2 === 0 && y2 === 0) {
+          continue
+        }
+
+        if (game[x + x2][y + y2].flagged) {
+          flaggedNeighborAmount++
+        }
+      }
+    }
+
+    return flaggedNeighborAmount
   }
 
   open() {
@@ -344,8 +435,6 @@ function showNeighbors(x, y) {
 }
 
 function showNumber(x, y) {
-  // ctx.fillStyle = "#000000"
-
   // Set fillStyle according to the number
   switch (game[x][y].neighborBombs) {
     case 1:
