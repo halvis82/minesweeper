@@ -5,6 +5,7 @@
  * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code
 */
 
+
 // Tile class
 // //////////////////////////////////////////-//////////////////////////////////////////
 class Tile {
@@ -59,17 +60,17 @@ class Tile {
     if (this.flagged) {
       // Draw flag
       ctx.drawImage(flagImg, borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
-      flags++
+      flags--
     }
     else {
-      flags--
+      flags++
     }
     
     this.determineHighlight()
 
     // Update flag label
     document.getElementById("flagAmount").innerText = ` ${flags}`
-    document.getElementById("flagAmount").style.color = (flags > bombs) ? "red" : "black"
+    document.getElementById("flagAmount").style.color = (flags < 0) ? "red" : "black"
   }
 
   determineHighlight() {
@@ -248,6 +249,7 @@ class Tile {
 }
 // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+
 // Program setup
 // //////////////////////////////////////////-//////////////////////////////////////////
 // Settings elements (tiles & bombs)
@@ -269,7 +271,7 @@ let gameOver = false
 let bombsUpdatedManually = false
 let actuallyStarted = false
 let unopenedTiles = Math.pow(tiles, 2)
-let flags = 0
+let flags = bombs
 let timer = {id: "", time: 0, running: false}
 
 // Set tiles & bombs
@@ -309,6 +311,7 @@ bombImg.src = "./images/bomb.png"
 // Setup game (set variables and create random game)
 setupGame()
 // \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 
 // Event listeners
 // //////////////////////////////////////////-//////////////////////////////////////////
@@ -415,7 +418,7 @@ function setupGame(exceptionPoint = []) {
   timer.running = false
   timer.time = 0
   document.getElementById("timer").innerText = " 0"
-  document.getElementById("flagAmount").innerText = " 0"
+  document.getElementById("flagAmount").innerText = bombs
 
   // Update variables (game & canvas)
   if (tiles <= 8) {
@@ -430,7 +433,7 @@ function setupGame(exceptionPoint = []) {
   game = []
   gameOver = false
   unopenedTiles = Math.pow(tiles, 2)
-  flags = 0
+  flags = bombs
   tileSize = 16 * canvasMultiplier
   borderSize = 2 * canvasMultiplier
   canvasSize = tiles * (tileSize + borderSize)
