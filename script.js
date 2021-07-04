@@ -1,16 +1,12 @@
-/* 
+/*
  * Minesweeper
  * By: Halvor
  * Created: 14.6.21-04.07.2021
  * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code
 */
 
-/*
-Changes:
-- maybe! flip x & y back to correct idk
-*/
-
-// Classes
+// Tile class
+// //////////////////////////////////////////-//////////////////////////////////////////
 class Tile {
   constructor(x, y) {
     this.x = x
@@ -250,7 +246,10 @@ class Tile {
     }
   }
 }
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
+// Program setup
+// //////////////////////////////////////////-//////////////////////////////////////////
 // Settings elements (tiles & bombs)
 const tileSettings = {
   label: document.getElementById("tilesAmountText"),
@@ -291,7 +290,7 @@ bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
 bombSettings.amount.max = Math.pow(tiles, 2) - 5
 
 // Canvas setup
-let canvasMultiplier = 1 //For low resolution when few tiles
+let canvasMultiplier = 1 // For low resolution when few tiles
 let tileSize = 16 * canvasMultiplier
 let borderSize = 2 * canvasMultiplier
 let canvasSize = tiles * (tileSize + borderSize) * canvasMultiplier
@@ -309,8 +308,10 @@ bombImg.src = "./images/bomb.png"
 
 // Setup game (set variables and create random game)
 setupGame()
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 // Event listeners
+// //////////////////////////////////////////-//////////////////////////////////////////
 c.addEventListener("mousedown", mouseDown)
 function mouseDown(e) {
   // Restart
@@ -403,9 +404,11 @@ bombSettings.label.addEventListener("click", () => {
   tileInput()
   settingsAmountChange()
 })
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
 // Functions
+// //////////////////////////////////////////-//////////////////////////////////////////
 function setupGame(exceptionPoint = []) {
   // Reset timer & flags
   clearInterval(timer.id)
@@ -532,3 +535,4 @@ function drawAllBombs(password) {
     `
   }
 }
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
