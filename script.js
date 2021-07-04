@@ -7,23 +7,46 @@
 
 /*
 Changes:
-- add neighbors coords like [[x1,y1],[x2,y2],...] to each Tile object MAYBE - do in constuctor
-
-Finishing touches:
-- change element sizes (not canvas)
+- comment more code
+- maybe! flip x & y back to correct idk
 */
 
 // Classes
 class Tile {
   constructor(x, y) {
+    this.x = x
+    this.y = y
     this.flagged = false
     this.tooManyFlags = false
     this.opened = false
     this.checked = false
     this.hasBomb = false
     this.neighborBombs = 0
-    this.x = x
-    this.y = y
+    this.neighbors = []
+
+    // Put neighbor coordinates in a list
+    const neighborCoords = [-1, 0, 1]
+    for (let x2 of neighborCoords) {
+      for (let y2 of neighborCoords) {
+        const xHere = this.x + x2
+        const yHere = this.y + y2
+
+        const x0y0 = (xHere === this.x && yHere === this.y)
+        if (xHere < 0 || yHere < 0 || xHere >= tiles || yHere >= tiles || x0y0) {
+          continue
+        }
+
+        this.neighbors.push([xHere, yHere])
+      }
+    }
+  }
+
+  countNeighborBombs() {
+    for (let coords of this.neighbors) {
+      if (game[coords[0]][coords[1]].hasBomb) {
+        this.neighborBombs++
+      }
+    }
   }
   
   toggleFlag() {
@@ -54,52 +77,41 @@ class Tile {
   }
 
   determineHighlight() {
-    const neighborCoords = [-1, 0, 1]
+    for (let coords of this.neighbors) {
+      const xHere = coords[0]
+      const yHere = coords[1]
+      const tileHere = game[xHere][yHere]
 
-    for (let x2 of neighborCoords) {
-      for (let y2 of neighborCoords) {
-        const xHere = this.x + x2
-        const yHere = this.y + y2
+      // Skip if unopened tile or no bomb neighbors
+      if (!tileHere.opened || tileHere.neighborBombs === 0) {
+        continue
+      }
 
-        // Skip if illegal coordinates, unopened tile, or no bomb neighbors
-        if (xHere < 0 || yHere < 0 || xHere >= tiles || yHere >= tiles || !game[xHere][yHere].opened || game[xHere][yHere].neighborBombs === 0) {
-          continue
+      // Find flagged neighbor amount
+      let flaggedNeighborAmount = 0
+      for (let coords2 of tileHere.neighbors) {
+        if (game[coords2[0]][coords2[1]].flagged) {
+          flaggedNeighborAmount++
         }
+      }
 
-        // Find flagged neighbor amount
-        let flaggedNeighborAmount = 0
-        for (let x3 of neighborCoords) {
-          for (let y3 of neighborCoords) {
-            const x0y0 = x3 === 0 && y3 === 0
-            if (xHere + x3 < 0 || yHere + y3 < 0 || xHere + x3 >= tiles || yHere + y3 >= tiles || x0y0) {
-              continue
-            }
-    
-            if (game[xHere + x3][yHere + y3].flagged) {
-              flaggedNeighborAmount++
-            }
-          }
-        }
+      // Add highlight
+      if (flaggedNeighborAmount > tileHere.neighborBombs && !tileHere.tooManyFlags) {
+        ctx.globalAlpha = 0.5
+        ctx.fillStyle = "#FF0000"
 
+        ctx.fillRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
 
-        // Add highlight
-        if (flaggedNeighborAmount > game[xHere][yHere].neighborBombs && !game[xHere][yHere].tooManyFlags) {
-          ctx.globalAlpha = 0.5
-          ctx.fillStyle = "#FF0000"
-          
-          ctx.fillRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
+        ctx.globalAlpha = 1
 
-          ctx.globalAlpha = 1
+        tileHere.tooManyFlags = true
+      }
+      // Remove highlight
+      else if (flaggedNeighborAmount <= tileHere.neighborBombs && tileHere.tooManyFlags) {
+        ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
+        tileHere.showNumber(false)
 
-          game[xHere][yHere].tooManyFlags = true
-        }
-        // Remove highlight
-         else if (flaggedNeighborAmount <= game[xHere][yHere].neighborBombs && game[xHere][yHere].tooManyFlags) {
-            ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
-            game[xHere][yHere].showNumber(false)
-
-            game[xHere][yHere].tooManyFlags = false
-         }
+        tileHere.tooManyFlags = false
       }
     }
   }
@@ -198,7 +210,6 @@ class Tile {
   }
 
   showNeighbors() {
-    const neighborCoords = [-1, 0, 1]
     this.checked = true
 
     if (this.neighborBombs > 0) {
@@ -206,31 +217,24 @@ class Tile {
       return
     }
 
-    for (let x2 of neighborCoords) {
-      for (let y2 of neighborCoords) {
-        const xNew = this.x + x2
-        const yNew = this.y + y2
-  
-        if (xNew >= 0 && yNew >= 0 && xNew < tiles && yNew < tiles) {
-          if (x2 === 0 && y2 === 0) {
-            continue
-          }
-    
-          if (game[xNew][yNew].checked || game[xNew][yNew].hasBomb) {
-            continue
-          }
-          game[xNew][yNew].checked = true
-  
-          if (!game[xNew][yNew].neighborBombs) { // Doesn't have bomb neighbors
-            game[xNew][yNew].showTile()
-            // showNeighbors(xNew, yNew)
-            game[xNew][yNew].showNeighbors()
-          }
-          else { // Has bomb neighbors
-            game[xNew][yNew].showTile()
-            game[xNew][yNew].showNumber()
-          }
-        }
+    for (let coords of this.neighbors) {
+      const xNew = coords[0]
+      const yNew = coords[1]
+      const tileNew = game[xNew][yNew]
+
+      if (tileNew.checked || tileNew.hasBomb) {
+        continue
+      }
+
+      game[xNew][yNew].checked = true
+
+      if (tileNew.neighborBombs === 0) {
+        tileNew.showTile()
+        tileNew.showNeighbors()
+      }
+      else {
+        tileNew.showTile()
+        tileNew.showNumber()
       }
     }
   }
@@ -317,13 +321,11 @@ function mouseDown(e) {
     actuallyStarted = true
   }
 
-  // console.log(x, y, game[x][y])   //Sometimes throws errors cant read property idk
   if (e.button === 0) { //Left click
     if (!game[x][y].flagged && !game[x][y].opened) {
       game[x][y].showTile()
 
       if (!gameOver) {
-        // showNeighbors(x, y)
         game[x][y].showNeighbors()
       }
     }
@@ -369,6 +371,7 @@ function settingsAmountChange() {
 // Click labels to reset values
 settingsList.forEach(el => el.label.addEventListener("click", () => {
   tileSettings.amount.value = 20
+  bombsUpdatedManually = false
   tileInput()
   settingsAmountChange()
 }))
@@ -407,7 +410,7 @@ function setupGame(exceptionPoint = []) {
     document.getElementById("info").children[2].remove()
   }
 
-  // Draw game backgrond (black borer)
+  // Draw game background (black border)
   ctx.fillStyle = "#000000"
   ctx.fillRect(0, 0, canvasSize, canvasSize)
 
@@ -440,21 +443,17 @@ function setupGame(exceptionPoint = []) {
     document.getElementById("timer").innerText = ` ${timer.time}`
   }, 1000) //One second
 
-  // Create game (data structure)
+  // Create game (data structure), & put all coords in list
+  let coords = []
   for (let x = 0; x < tiles; x++) {
     game.push([])
     for (let y = 0; y < tiles; y++) {
       game[x].push(new Tile(x, y))
+      coords.push([x, y])
     }
   }
 
   // Set random bombs
-  let coords = [] // Put all game coords in a list
-  for (let x = 0; x < tiles; x++) {
-    for (let y = 0; y < tiles; y++) {
-      coords.push([x, y])
-    }
-  }
   for (let point = 0; point < coords.length; point++) { // Remove excepted coords
     if (exceptionPoint[0] === coords[point][0] && exceptionPoint[1] === coords[point][1]) {
       coords.splice(point, 1)
@@ -466,22 +465,10 @@ function setupGame(exceptionPoint = []) {
     coords.splice(randomCoordinate, 1)
   }
 
-  // Find how many neighbor bombs
-  const neighborCoords = [-1, 0, 1]
+  // Count neighbor bomb amount per tile
   for (let x = 0; x < tiles; x++) {
     for (let y = 0; y < tiles; y++) {
-      for (let x2 of neighborCoords) {
-        for (let y2 of neighborCoords) {
-          if (x + x2 >= 0 && y + y2 >= 0 && x + x2 < tiles && y + y2 < tiles) {
-            if (x2 === 0 && y2 === 0) {
-              continue
-            }
-            if (game[x + x2][y + y2].hasBomb) {
-              game[x][y].neighborBombs++
-            }
-          }
-        }
-      }
+      game[x][y].countNeighborBombs()
     }
   }
 }
