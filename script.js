@@ -7,7 +7,6 @@
 
 /*
 Changes:
-- game actually setting up when right clicking to flag as first click
 - maybe! flip x & y back to correct idk
 */
 
@@ -330,14 +329,14 @@ function mouseDown(e) {
     return
   }
 
-  // Setup game & guarantee first isn't a bomb
-  if (!actuallyStarted) {
-    setupGame([x, y])
-    actuallyStarted = true
-  }
-
   // Left click (open tile)
   if (e.button === 0) {
+    // Setup game & guarantee first isn't a bomb
+    if (!actuallyStarted) {
+      setupGame([x, y])
+      actuallyStarted = true
+    }
+
     if (!game[x][y].flagged && !game[x][y].opened) {
       game[x][y].showTile()
 
@@ -348,6 +347,9 @@ function mouseDown(e) {
   }
   // Right click (toggle flag)
   else if (e.button === 2) {
+    if (!actuallyStarted) {
+      return
+    }
     if (!game[x][y].opened) {
       game[x][y].toggleFlag(x, y)
     }
@@ -390,12 +392,17 @@ function settingsAmountChange() {
 }
 
 // Click labels to reset values
-settingsList.forEach(el => el.label.addEventListener("click", () => {
+tileSettings.label.addEventListener("click", () => {
   tileSettings.amount.value = 20
   bombsUpdatedManually = false
   tileInput()
   settingsAmountChange()
-}))
+})
+bombSettings.label.addEventListener("click", () => {  
+  bombsUpdatedManually = false
+  tileInput()
+  settingsAmountChange()
+})
 
 
 // Functions
