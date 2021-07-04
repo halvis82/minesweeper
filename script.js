@@ -2,7 +2,7 @@
 
 /*
 Changes:
-- save tiles & bombs to localStorage
+- add neighbors coords like [[x1,y1],[x2,y2],...] to each Tile object MAYBE
 
 Finishing touches:
 - change functions to Tile methods
@@ -163,7 +163,7 @@ const bombSettings = {
 
 // Variables
 let tiles = 20
-let bombs = 50 //Must be less than tiles^2
+let bombs = 50 // Must be less than tiles^2
 let tileColor = "#0000FF"
 let game = []
 let gameOver = false
@@ -177,8 +177,24 @@ flagImg.src = "./images/flag.png"
 const bombImg = new Image()
 bombImg.src = "./images/bomb.png"
 
+// Set tiles & bombs
+if (localStorage.getItem("tiles") !== null) {
+  tiles = +localStorage.getItem("tiles")
+} else {
+  tiles = 20
+}
+if (localStorage.getItem("bombs") !== null || localStorage.getItem("bombs") > Math.pow(tiles, 2) - 5) {
+  bombs = +localStorage.getItem("bombs")
+} else {
+  bombs = 50
+}
+tileSettings.amount.value = +tiles
+tileSettings.label.innerText = `Tiles [${tileSettings.amount.value}]:`
+bombSettings.amount.value = +bombs
+bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
+
 // Canvas setup
-let canvasMultiplier = 1 //something
+let canvasMultiplier = 1 //For low resolution with few tiles
 let tileSize = 16 * canvasMultiplier
 let borderSize = 2 * canvasMultiplier
 let canvasSize = tiles * (tileSize + borderSize) * canvasMultiplier
@@ -254,6 +270,11 @@ const settingsList = [tileSettings.amount, bombSettings.amount]
 settingsList.forEach(el => el.addEventListener("change", () => {
   tiles = +tileSettings.amount.value
   bombs = +bombSettings.amount.value
+
+  // Save to local storage
+  localStorage.setItem("tiles", tiles)
+  localStorage.setItem("bombs", bombs)
+
   setupGame()
 }))
 
