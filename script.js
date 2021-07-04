@@ -8,7 +8,6 @@
 /*
 Changes:
 - add neighbors coords like [[x1,y1],[x2,y2],...] to each Tile object MAYBE - do in constuctor
-- click settings labels to reset their values
 
 Finishing touches:
 - change element sizes (not canvas)
@@ -337,7 +336,8 @@ function mouseDown(e) {
 }
 
 // Update labels & max bombs relative to slider
-tileSettings.amount.addEventListener("input", () => {
+tileSettings.amount.addEventListener("input", tileInput)
+function tileInput() {
   tileSettings.label.innerText = `Tiles [${tileSettings.amount.value}]:`
   bombSettings.amount.max = Math.pow(+tileSettings.amount.value, 2) - 5
 
@@ -345,7 +345,7 @@ tileSettings.amount.addEventListener("input", () => {
     bombSettings.amount.value = Math.floor(+Math.pow(tileSettings.amount.value, 2) / 7)
     bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
   }
-})
+}
 bombSettings.amount.addEventListener("input", () => {
   bombSettings.label.innerText = `Bombs [${bombSettings.amount.value}]:`
 
@@ -353,8 +353,9 @@ bombSettings.amount.addEventListener("input", () => {
 })
 
 // Update game on slider change
-const settingsList = [tileSettings.amount, bombSettings.amount]
-settingsList.forEach(el => el.addEventListener("change", () => {
+const settingsList = [tileSettings, bombSettings]
+settingsList.forEach(el => el.amount.addEventListener("change", settingsAmountChange))
+function settingsAmountChange() {
   tiles = +tileSettings.amount.value
   bombs = +bombSettings.amount.value
 
@@ -363,6 +364,13 @@ settingsList.forEach(el => el.addEventListener("change", () => {
   localStorage.setItem("bombs", bombs)
 
   setupGame()
+}
+
+// Click labels to reset values
+settingsList.forEach(el => el.label.addEventListener("click", () => {
+  tileSettings.amount.value = 20
+  tileInput()
+  settingsAmountChange()
 }))
 
 // Functions
