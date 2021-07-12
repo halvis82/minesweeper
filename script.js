@@ -105,7 +105,9 @@ class Tile {
       }
       // Remove highlight
       else if (flaggedNeighborAmount <= tileHere.neighborBombs && tileHere.tooManyFlags) {
-        ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
+        // ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
+        ctx.fillStyle = "#FFFFFF"
+        ctx.fillRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
         tileHere.showNumber(false)
 
         tileHere.tooManyFlags = false
@@ -126,7 +128,9 @@ class Tile {
       this.open()
 
       // Clear tile
-      ctx.clearRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
+      // ctx.clearRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
+      ctx.fillStyle = "#FFFFFF"
+      ctx.fillRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
 
       // Check if win
       if (unopenedTiles === bombs) {
