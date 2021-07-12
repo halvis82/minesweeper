@@ -2,7 +2,7 @@
  * Minesweeper
  * By: Halvor
  * Created: 14.6.21-04.07.2021
- * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code
+ * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code (performance sucks)
 */
 
 
