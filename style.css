@@ -22,6 +22,7 @@ canvas {
   border: solid black;
   background-color: white;
   cursor: crosshair;
+  touch-action: manipulation;
 }
 
 .settings {
