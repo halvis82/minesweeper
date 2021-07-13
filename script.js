@@ -1,7 +1,7 @@
 /*
  * Minesweeper
  * By: Halvor
- * Created: 14.6.21-04.07.2021
+ * Created: 14.6.21-13.07.2021
  * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code (performance sucks)
 */
 
@@ -105,7 +105,6 @@ class Tile {
       }
       // Remove highlight
       else if (flaggedNeighborAmount <= tileHere.neighborBombs && tileHere.tooManyFlags) {
-        // ctx.clearRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
         ctx.fillStyle = "#FFFFFF"
         ctx.fillRect(borderSize / 2 + (yHere) * tileSize + (yHere) * borderSize, borderSize / 2 + (xHere) * tileSize + (xHere) * borderSize, tileSize, tileSize)
         tileHere.showNumber(false)
@@ -128,7 +127,6 @@ class Tile {
       this.open()
 
       // Clear tile
-      // ctx.clearRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
       ctx.fillStyle = "#FFFFFF"
       ctx.fillRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
 
@@ -148,8 +146,10 @@ class Tile {
 
         // Disable input for .5 seconds
         c.removeEventListener("mousedown", mouseDown)
+        c.removeEventListener("mouseup", mouseUp)
         setTimeout(() => {
           c.addEventListener("mousedown", mouseDown)
+          c.addEventListener("mouseup", mouseUp)
         }, 500)
       }
     }
@@ -169,8 +169,10 @@ class Tile {
     
       // Disable input for .5 seconds
       c.removeEventListener("mousedown", mouseDown)
+      c.removeEventListener("mouseup", mouseUp)
       setTimeout(() => {
         c.addEventListener("mousedown", mouseDown)
+        c.addEventListener("mouseup", mouseUp)
       }, 500)
     }
   }
@@ -270,13 +272,16 @@ const bombSettings = {
 let tiles = 20
 let bombs = 50 // Must be less than tiles^2
 let tileColor = "#0000FF"
+const holdFlagTime = 300 // ms
 let game = []
-let gameOver = false
+let gameOver = true
 let bombsUpdatedManually = false
 let actuallyStarted = false
 let unopenedTiles = Math.pow(tiles, 2)
 let flags = bombs
 let timer = {id: "", time: 0, running: false}
+let mouseTimeout
+let cancelMouseUp = false
 
 // Set tiles & bombs
 if (localStorage.getItem("tiles") !== null) {
@@ -319,14 +324,18 @@ setupGame()
 
 // Event listeners
 // //////////////////////////////////////////-//////////////////////////////////////////
+c.addEventListener("mouseleave", () => {
+  // Prevent start hold on canvas and leave, and still flag
+  clearTimeout(mouseTimeout)
+})
+
+c.addEventListener("mouseenter", () => {
+  // Prevent mouse down outside and up on canvas, and still open tile
+  cancelMouseUp = true
+})
+
 c.addEventListener("mousedown", mouseDown)
 function mouseDown(e) {
-  // Restart
-  if (gameOver) {
-    setupGame()
-    return
-  }
-
   // Find game coordinates according to canvas element size
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
   const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
@@ -337,29 +346,90 @@ function mouseDown(e) {
     return
   }
 
+  // Reset cancel mouse up
+  cancelMouseUp = false
+
+  // If not started
+  if (gameOver) {
+    // If actually not started or right click -> start 'fake' game
+    if (actuallyStarted) {
+      // If left or right click
+      if (e.button === 0 || e.button === 2) {
+        setupGame()
+      }
+    }
+    // Left click
+    else if (e.button === 0) {
+      setupGame([x, y])
+      actuallyStarted = true
+
+      game[x][y].showTile()
+      game[x][y].showNeighbors()
+    }
+
+    // Stop here & cancel mouse up
+    cancelMouseUp = true
+    return
+  }
+
+  // Right click (flag)
+  if (e.button === 2 && actuallyStarted) {
+    if (!game[x][y].opened) {
+      game[x][y].toggleFlag()
+    }
+    cancelMouseUp = true
+  }
+  // Left click (check hold to flag)
+  if (e.button === 0 && actuallyStarted) {
+    mouseTimeout = setTimeout(() => {
+      if (!game[x][y].opened) {
+        game[x][y].toggleFlag()
+      }
+      cancelMouseUp = true
+    }, holdFlagTime)
+  }
+}
+
+c.addEventListener("mouseup", mouseUp)
+function mouseUp(e) {
+  // Stop if cancel mouse up 
+  if (cancelMouseUp) {
+    cancelMouseUp = false
+    return
+  }
+  // Stop timout from mousedown
+  clearTimeout(mouseTimeout)
+
   // Left click (open tile)
   if (e.button === 0) {
-    // Setup game & guarantee first isn't a bomb
+    // Find game coordinates according to canvas element size
+    const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
+    const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+    const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+  
+    // Cancel if clicked slightly off screen
+    if (x < 0 || x >= tiles || y < 0 || y >= tiles) {
+      return
+    }
+
+    // Start game
     if (!actuallyStarted) {
       setupGame([x, y])
       actuallyStarted = true
+  
+      game[x][y].showTile()
+      game[x][y].showNeighbors()
+  
+      return
     }
 
+    // Open tile
     if (!game[x][y].flagged && !game[x][y].opened) {
       game[x][y].showTile()
 
       if (!gameOver) {
         game[x][y].showNeighbors()
       }
-    }
-  }
-  // Right click (toggle flag)
-  else if (e.button === 2) {
-    if (!actuallyStarted) {
-      return
-    }
-    if (!game[x][y].opened) {
-      game[x][y].toggleFlag(x, y)
     }
   }
 }
