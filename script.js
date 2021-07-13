@@ -336,6 +336,9 @@ c.addEventListener("mouseenter", () => {
 
 c.addEventListener("mousedown", mouseDown)
 function mouseDown(e) {
+  var event = e || window.event; ///////////////////////////////////////
+  event.preventDefault(); ///////////////////////////////////////
+  event.stopPropagation(); ///////////////////////////////////////
   // Find game coordinates according to canvas element size
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
   const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
@@ -392,6 +395,9 @@ function mouseDown(e) {
 
 c.addEventListener("mouseup", mouseUp)
 function mouseUp(e) {
+  var event = e || window.event; ///////////////////////////////////////
+  event.preventDefault(); ///////////////////////////////////////
+  event.stopPropagation(); ///////////////////////////////////////
   // Stop if cancel mouse up 
   if (cancelMouseUp) {
     cancelMouseUp = false
