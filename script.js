@@ -346,9 +346,20 @@ c.addEventListener("mouseenter", () => {
   cancelMouseUp = true
 })
 
+c.addEventListener("touchmove", (e) => {
+  e.returnValue = false
+  e.preventDefault()
+})
+
+c.addEventListener("touchcancel", (e) => {
+  e.returnValue = false
+  e.preventDefault()
+})
+
 c.addEventListener("mousedown", mouseDown)
 c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
+  e.returnValue = false
   e.preventDefault()
 
   let x
@@ -427,6 +438,7 @@ function mouseDown(e) {
 c.addEventListener("mouseup", mouseUp)
 c.addEventListener("touchend", mouseUp)
 function mouseUp(e) {
+  e.returnValue = false
   e.preventDefault()
 
   
