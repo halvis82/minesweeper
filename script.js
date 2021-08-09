@@ -349,6 +349,9 @@ c.addEventListener("mouseenter", () => {
 c.addEventListener("mousedown", mouseDown)
 c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
+  document.getElementsByTagName("h1")[0].style.color = "red"
+
+
   if (e.type === "touchstart") {
     console.log("touchstart used")
     e.preventDefault()
