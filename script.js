@@ -367,6 +367,8 @@ function mouseDown(e) {
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
 
   if (e.type === "touchstart") {
+    console.log(e.targetTouches)    ////////////
+
     x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
     y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
@@ -447,6 +449,9 @@ function mouseUp(e) {
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
 
   if (e.type === "touchend") {
+    console.log(e.targetTouches)    ////////////
+
+    
     x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
     y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
