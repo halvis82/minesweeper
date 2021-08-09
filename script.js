@@ -349,6 +349,7 @@ c.addEventListener("mouseenter", () => {
 c.addEventListener("mousedown", mouseDown)
 c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
+  e.preventDefault()
 
   let x
   let y
@@ -426,6 +427,9 @@ function mouseDown(e) {
 c.addEventListener("mouseup", mouseUp)
 c.addEventListener("touchend", mouseUp)
 function mouseUp(e) {
+  e.preventDefault()
+
+  
   let x
   let y
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
