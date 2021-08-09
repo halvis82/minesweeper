@@ -1,7 +1,7 @@
 /*
  * Minesweeper
  * By: Halvor
- * Created: 14.6.21-13.07.2021
+ * Created: 14.6.21-09.08.2021
  * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code (performance sucks)
 */
 
@@ -146,10 +146,16 @@ class Tile {
 
         // Disable input for .5 seconds
         c.removeEventListener("mousedown", mouseDown)
+        c.removeEventListener("touchstart", mouseDown)
+
         c.removeEventListener("mouseup", mouseUp)
+        c.removeEventListener("touchend", mouseUp)
         setTimeout(() => {
           c.addEventListener("mousedown", mouseDown)
+          c.addEventListener("touchstart", mouseDown)
+
           c.addEventListener("mouseup", mouseUp)
+          c.addEventListener("touchend", mouseUp)
         }, 500)
       }
     }
@@ -169,10 +175,16 @@ class Tile {
     
       // Disable input for .5 seconds
       c.removeEventListener("mousedown", mouseDown)
+      c.removeEventListener("touchstart", mouseDown)
+
       c.removeEventListener("mouseup", mouseUp)
+      c.removeEventListener("touchend", mouseUp)
       setTimeout(() => {
         c.addEventListener("mousedown", mouseDown)
+        c.addEventListener("touchstart", mouseDown)
+
         c.addEventListener("mouseup", mouseUp)
+        c.addEventListener("touchend", mouseUp)
       }, 500)
     }
   }
@@ -335,7 +347,16 @@ c.addEventListener("mouseenter", () => {
 })
 
 c.addEventListener("mousedown", mouseDown)
+c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
+  if (e.type === "touchstart") {
+    console.log("touchstart used")
+    e.preventDefault()
+  } else {
+    console.log("mousedown used")
+  }
+
+
   // Find game coordinates according to canvas element size
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
   const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
@@ -391,7 +412,17 @@ function mouseDown(e) {
 }
 
 c.addEventListener("mouseup", mouseUp)
+c.addEventListener("touchend", mouseUp)
 function mouseUp(e) {
+  if (e.type === "touchend") {
+    console.log("touchend used")
+    e.preventDefault()
+  } else {
+    console.log("mouseup used")
+  }
+
+
+  
   // Stop if cancel mouse up 
   if (cancelMouseUp) {
     cancelMouseUp = false
