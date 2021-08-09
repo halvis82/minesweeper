@@ -5,8 +5,6 @@
  * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code (performance sucks)
 */
 
-// Issue: able to click tile and draw white for a split second after game end...
-
 
 // Tile class
 // //////////////////////////////////////////-//////////////////////////////////////////
@@ -128,7 +126,11 @@ class Tile {
     if (!this.hasBomb) {
       this.open()
 
-      // Clear tile
+      if (gameOver) {
+        return
+      }
+
+      // Paint tile white
       ctx.fillStyle = "#FFFFFF"
       ctx.fillRect(borderSize / 2 + this.y * tileSize + this.y * borderSize, borderSize / 2 + this.x * tileSize + this.x * borderSize, tileSize, tileSize)
 
@@ -351,9 +353,6 @@ c.addEventListener("mouseenter", () => {
 c.addEventListener("mousedown", mouseDown)
 c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
-  // e.returnValue = false
-  // e.preventDefault()
-
   // Find game coordinates according to canvas element size
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
   const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
@@ -407,10 +406,7 @@ function mouseDown(e) {
 
 c.addEventListener("mouseup", mouseUp)
 c.addEventListener("touchend", mouseUp)
-function mouseUp(e) {
-  // e.returnValue = false
-  // e.preventDefault()
-  
+function mouseUp(e) {  
   // Stop if cancel mouse up 
   if (cancelMouseUp) {
     cancelMouseUp = false
