@@ -451,6 +451,12 @@ function mouseUp(e) {
   if (e.type === "touchend") {
     console.log(e.targetTouches)    ////////////
 
+    console.log(e)
+
+    console.log( //maybe a way to find coords
+      Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles),
+      Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+    )
     
     x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
     y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
