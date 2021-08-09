@@ -349,7 +349,6 @@ c.addEventListener("mouseenter", () => {
 c.addEventListener("mousedown", mouseDown)
 c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
-  document.getElementsByTagName("h1")[0].style.color = "red"
 
   let x
   let y
@@ -360,6 +359,7 @@ function mouseDown(e) {
     y = Math.floor(e.targetTouches[0].pageY - can.offsetTop)
 
     console.log("touchstart used")
+    document.getElementsByTagName("h1")[0].style.color = "red"
     e.preventDefault()
   } else {
     x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
