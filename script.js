@@ -365,22 +365,24 @@ function mouseDown(e) {
   let x
   let y
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
+  x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+  y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
-  if (e.type === "touchstart") {
-    console.log(e.targetTouches)    ////////////
+  // if (e.type === "touchstart") {
+  //   console.log(e.targetTouches)    ////////////
 
-    x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
-    y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
+  //   x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
+  //   y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
-    console.log("touchstart used")
-    document.getElementsByTagName("h1")[0].style.color = "red"
-    e.preventDefault()
-  } else {
-    x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-    y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+  //   console.log("touchstart used")
+  //   document.getElementsByTagName("h1")[0].style.color = "red"
+  //   e.preventDefault()
+  // } else {
+  //   x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+  //   y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
-    console.log("mousedown used")
-  }
+  //   console.log("mousedown used")
+  // }
 
 
   // Find game coordinates according to canvas element size
@@ -447,28 +449,30 @@ function mouseUp(e) {
   let x
   let y
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
+  x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+  y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
-  if (e.type === "touchend") {
-    console.log(e.targetTouches)    ////////////
+  // if (e.type === "touchend") {
+  //   console.log(e.targetTouches)    ////////////
 
-    console.log(e)
+  //   console.log(e)
 
-    console.log( //maybe a way to find coords
-      Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles),
-      Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
-    )
+  //   console.log( //maybe a way to find coords
+  //     Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles),
+  //     Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+  //   )
     
-    x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
-    y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
+  //   x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
+  //   y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
-    console.log("touchend used")
-    e.preventDefault()
-  } else {
-    x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-    y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+  //   console.log("touchend used")
+  //   e.preventDefault()
+  // } else {
+  //   x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+  //   y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
-    console.log("mouseup used")
-  }
+  //   console.log("mouseup used")
+  // }
 
 
   
