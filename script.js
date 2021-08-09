@@ -446,17 +446,17 @@ function mouseUp(e) {
   let y
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
 
-  if (e.type === "touchstart") {
+  if (e.type === "touchend") {
     x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
     y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
-    console.log("touchstart used")
+    console.log("touchend used")
     e.preventDefault()
   } else {
     x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
     y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
-    console.log("mousedown used")
+    console.log("mouseup used")
   }
 
 
