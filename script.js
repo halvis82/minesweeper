@@ -351,19 +351,28 @@ c.addEventListener("touchstart", mouseDown)
 function mouseDown(e) {
   document.getElementsByTagName("h1")[0].style.color = "red"
 
+  let x
+  let y
+  const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
 
   if (e.type === "touchstart") {
+    x = Math.floor(e.targetTouches[0].pageX - can.offsetLeft)
+    y = Math.floor(e.targetTouches[0].pageY - can.offsetTop)
+
     console.log("touchstart used")
     e.preventDefault()
   } else {
+    x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+    y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+
     console.log("mousedown used")
   }
 
 
   // Find game coordinates according to canvas element size
-  const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
-  const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-  const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+  // const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
+  // const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+  // const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
   // Cancel if clicked slightly off screen
   if (x < 0 || x >= tiles || y < 0 || y >= tiles) {
