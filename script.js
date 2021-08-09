@@ -5,6 +5,8 @@
  * NO INTERNET PROJECT. x & y flipped for some reason. Tons of terrible code (performance sucks)
 */
 
+// Issue: able to click tile and draw white for a split second after game end...
+
 
 // Tile class
 // //////////////////////////////////////////-//////////////////////////////////////////
@@ -346,15 +348,15 @@ c.addEventListener("mouseenter", () => {
   cancelMouseUp = true
 })
 
-c.addEventListener("touchmove", (e) => {
-  e.returnValue = false
-  e.preventDefault()
-})
+// c.addEventListener("touchmove", (e) => {
+//   e.returnValue = false
+//   e.preventDefault()
+// })
 
-c.addEventListener("touchcancel", (e) => {
-  e.returnValue = false
-  e.preventDefault()
-})
+// c.addEventListener("touchcancel", (e) => {
+//   e.returnValue = false
+//   e.preventDefault()
+// })
 
 c.addEventListener("mousedown", mouseDown)
 c.addEventListener("touchstart", mouseDown)
@@ -362,35 +364,10 @@ function mouseDown(e) {
   e.returnValue = false
   e.preventDefault()
 
-  let x
-  let y
-  const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
-  x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-  y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
-
-  console.log(x, y)
-
-  // if (e.type === "touchstart") {
-  //   console.log(e.targetTouches)    ////////////
-
-  //   x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
-  //   y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
-
-  //   console.log("touchstart used")
-  //   document.getElementsByTagName("h1")[0].style.color = "red"
-  //   e.preventDefault()
-  // } else {
-  //   x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-  //   y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
-
-  //   console.log("mousedown used")
-  // }
-
-
   // Find game coordinates according to canvas element size
-  // const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
-  // const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-  // const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+  const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
+  const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+  const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
   // Cancel if clicked slightly off screen
   if (x < 0 || x >= tiles || y < 0 || y >= tiles) {
@@ -404,13 +381,10 @@ function mouseDown(e) {
   if (gameOver) {
     // If actually not started or right click -> start 'fake' game
     if (actuallyStarted) {
-      // If left or right click
-      // if (e.button === 0 || e.button === 2) {
-        setupGame()
-      // }
+      setupGame()
     }
     // Left click
-    else /*if (e.button === 0)*/ {
+    else if (e.button !== 2) {
       setupGame([x, y])
       actuallyStarted = true
 
@@ -446,39 +420,6 @@ c.addEventListener("touchend", mouseUp)
 function mouseUp(e) {
   e.returnValue = false
   e.preventDefault()
-
-  
-  let x
-  let y
-  const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
-  x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-  y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
-
-  console.log(x, y)
-
-  // if (e.type === "touchend") {
-  //   console.log(e.targetTouches)    ////////////
-
-  //   console.log(e)
-
-  //   console.log( //maybe a way to find coords
-  //     Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles),
-  //     Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
-  //   )
-    
-  //   x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
-  //   y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
-
-  //   console.log("touchend used")
-  //   e.preventDefault()
-  // } else {
-  //   x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-  //   y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
-
-  //   console.log("mouseup used")
-  // }
-
-
   
   // Stop if cancel mouse up 
   if (cancelMouseUp) {
@@ -491,9 +432,9 @@ function mouseUp(e) {
   // Left click (open tile)
   if (e.button !== 2) {
     // Find game coordinates according to canvas element size
-    // const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
-    // const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
-    // const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+    const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
+    const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
+    const y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
   
     // Cancel if clicked slightly off screen
     if (x < 0 || x >= tiles || y < 0 || y >= tiles) {
