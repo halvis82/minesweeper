@@ -367,8 +367,8 @@ function mouseDown(e) {
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
 
   if (e.type === "touchstart") {
-    x = Math.floor(e.targetTouches[0].pageX - can.offsetLeft)
-    y = Math.floor(e.targetTouches[0].pageY - can.offsetTop)
+    x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
+    y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
     console.log("touchstart used")
     document.getElementsByTagName("h1")[0].style.color = "red"
@@ -447,8 +447,8 @@ function mouseUp(e) {
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
 
   if (e.type === "touchstart") {
-    x = Math.floor(e.targetTouches[0].pageX - can.offsetLeft)
-    y = Math.floor(e.targetTouches[0].pageY - can.offsetTop)
+    x = Math.floor(e.targetTouches[0].pageX - c.offsetLeft)
+    y = Math.floor(e.targetTouches[0].pageY - c.offsetTop)
 
     console.log("touchstart used")
     e.preventDefault()
