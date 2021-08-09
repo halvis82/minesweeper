@@ -368,6 +368,8 @@ function mouseDown(e) {
   x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
   y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
 
+  console.log(x, y)
+
   // if (e.type === "touchstart") {
   //   console.log(e.targetTouches)    ////////////
 
@@ -451,6 +453,8 @@ function mouseUp(e) {
   const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
   x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
   y = Math.floor(((e.layerX - (borderSize / 2)) / canvasElementSize) * tiles)
+
+  console.log(x, y)
 
   // if (e.type === "touchend") {
   //   console.log(e.targetTouches)    ////////////
