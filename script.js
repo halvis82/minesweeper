@@ -405,12 +405,12 @@ function mouseDown(e) {
     // If actually not started or right click -> start 'fake' game
     if (actuallyStarted) {
       // If left or right click
-      if (e.button === 0 || e.button === 2) {
+      // if (e.button === 0 || e.button === 2) {
         setupGame()
-      }
+      // }
     }
     // Left click
-    else if (e.button === 0) {
+    else /*if (e.button === 0)*/ {
       setupGame([x, y])
       actuallyStarted = true
 
@@ -430,8 +430,8 @@ function mouseDown(e) {
     }
     cancelMouseUp = true
   }
-  // Left click (check hold to flag)
-  if (e.button === 0 && actuallyStarted) {
+  // Left click [Not right click] (check hold to flag)
+  if (e.button !== 2 && actuallyStarted) {
     mouseTimeout = setTimeout(() => {
       if (!game[x][y].opened) {
         game[x][y].toggleFlag()
@@ -489,7 +489,7 @@ function mouseUp(e) {
   clearTimeout(mouseTimeout)
 
   // Left click (open tile)
-  if (e.button === 0) {
+  if (e.button !== 2) {
     // Find game coordinates according to canvas element size
     // const canvasElementSize = parseInt(window.getComputedStyle(c).width, 10)
     // const x = Math.floor(((e.layerY - (borderSize / 2)) / canvasElementSize) * tiles)
